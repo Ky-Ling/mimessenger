@@ -1,5 +1,11 @@
+import ChatInput from './ChatInput';
+import MessageList from './MessageList';
+
 export default function HomePage() {
-  return (
-    <h1>Home page</h1>
-  )
+	return (
+		<>
+			<MessageList />
+			<ChatInput />
+		</>
+	);
 }
