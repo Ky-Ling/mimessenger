@@ -29,7 +29,7 @@ const ChatInput: React.FC = () => {
 			const res = await fetch('/api/addMessage', {
 				method: 'POST',
 				headers: {
-					'Content-type': 'application/json',
+					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
 					message,
@@ -37,6 +37,7 @@ const ChatInput: React.FC = () => {
 			});
 
 			const data = await res.json();
+			console.log(data);
 		};
 
 		uploadMessageToUpstash();
