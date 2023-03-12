@@ -2,11 +2,17 @@
 
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-
+import { useQuery } from '@tanstack/react-query';
 import { Message } from '../typings';
+import fetcher from '@/utils/fetchMessages';
 
 const ChatInput: React.FC = () => {
 	const [input, setInput] = useState('');
+	const { isLoading, error, data } = useQuery({
+		queryKey: ['messages'],
+		queryFn: fetcher,
+	});
+	console.log(data);
 
 	const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
