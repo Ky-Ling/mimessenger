@@ -2,17 +2,56 @@
 
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Message } from '../typings';
 import fetcher from '@/utils/fetchMessages';
 
 const ChatInput: React.FC = () => {
+	const queryClient = useQueryClient();
+
 	const [input, setInput] = useState('');
 	const { isLoading, error, data } = useQuery({
 		queryKey: ['messages'],
 		queryFn: fetcher,
 	});
+
 	console.log(data);
+
+	const uploadMessageToUpstash = async (message: Message) => {
+		const data = await fetch('/api/addMessage', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				message,
+			}),
+		}).then((res) => res.json());
+
+		return data.messages;
+	};
+
+	const addMessageMutation = useMutation({
+		mutationFn: uploadMessageToUpstash,
+		onMutate: async (newMessage: Message) => {
+			await queryClient.cancelQueries({ queryKey: ['messages'] });
+
+			const previousTodos = queryClient.getQueryData(['messages']);
+
+			queryClient.setQueryData(['messages'], (oldMessages: any) => [
+				...oldMessages,
+				newMessage,
+			]);
+
+			return { previousTodos };
+		},
+		onError: (error, newMessage, context) => {
+			console.error(error);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ['messages'] });
+		},
+	});
 
 	const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -31,22 +70,7 @@ const ChatInput: React.FC = () => {
 			email: 'hhh.com',
 		};
 
-		const uploadMessageToUpstash = async () => {
-			const res = await fetch('/api/addMessage', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					message,
-				}),
-			});
-
-			const data = await res.json();
-			console.log(data);
-		};
-
-		uploadMessageToUpstash();
+		addMessageMutation.mutate(message);
 	};
 
 	return (
