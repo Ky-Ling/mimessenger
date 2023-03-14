@@ -71,6 +71,7 @@ const ChatInput: React.FC = () => {
 		};
 
 		addMessageMutation.mutate(message);
+		queryClient.invalidateQueries({ queryKey: ['messages'] });
 	};
 
 	return (
