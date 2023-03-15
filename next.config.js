@@ -5,6 +5,7 @@ const nextConfig = {
 			'links.papareact.com',
 			'scontent-nrt1-1.xx.fbcdn.net',
 			'1000logos.net',
+			'scontent.fhkg10-1.fna.fbcdn.net',
 		],
 	},
 	experimental: {

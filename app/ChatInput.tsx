@@ -66,7 +66,10 @@ const ChatInput: React.FC = () => {
 			created_at: Date.now(),
 			username: 'Torrid',
 			profilePic:
-				'https://scontent-nrt1-1.xx.fbcdn.net/v/t39.30808-6/320129965_1160752784833145_7000813986385643717_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=L2EUmu9Aiv8AX8nCo6S&tn=vKX-NcxAD7B80kyV&_nc_ht=scontent-nrt1-1.xx&oh=00_AfA7c7pxkgNo4b-MsEnRo2hiVWyDZQIibeL7x_tsMdJ_YQ&oe=63FFCAA9',
+				// 'https://scontent.fhkg10-1.fna.fbcdn.net/v/t39.30808-6/277528122_394444219164533_222561899117725696_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=174925&_nc_ohc=EM8l2f5ROCoAX855d8f&_nc_oc=AQnvgvl2Tk-niHDEXM5dSBnmo58I8WLSGcCWNatK6YyPisZ2VzsHyHjqksApYUeQyZU&_nc_ht=scontent.fhkg10-1.fna&oh=00_AfA5JuU3bFjhd0S1lSVWVfLBrqu7i9ggmD49gSviWWbD-Q&oe=64149927',
+				// 'https://links.papareact.com',
+				// 'https://links.papareact.com/jne',
+				'https://links.papareact.com/jne',
 			email: 'hhh.com',
 		};
 
@@ -77,7 +80,7 @@ const ChatInput: React.FC = () => {
 	return (
 		<form
 			onSubmit={formSubmitHandler}
-			className="fixed bottom-0 z-50 w-full flex px-10 py-5 space-x-2 border-t border-gray-100"
+			className="fixed bottom-0 z-50 w-full flex px-10 py-5 space-x-2 border-t bg-white  border-gray-100"
 		>
 			<input
 				onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
