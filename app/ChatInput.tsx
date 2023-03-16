@@ -2,58 +2,15 @@
 
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import useSWR from 'swr';
 import { Message } from '../typings';
 import fetcher from '@/utils/fetchMessages';
 
 const ChatInput: React.FC = () => {
-	const queryClient = useQueryClient();
-
 	const [input, setInput] = useState('');
-	const { isLoading, error, data } = useQuery({
-		queryKey: ['messages'],
-		queryFn: fetcher,
-	});
+	const { data: messages, error, mutate } = useSWR('/api/getMessages', fetcher);
 
-	console.log(data);
-
-	const uploadMessageToUpstash = async (message: Message) => {
-		const data = await fetch('/api/addMessage', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				message,
-			}),
-		}).then((res) => res.json());
-
-		return data.messages;
-	};
-
-	const addMessageMutation = useMutation({
-		mutationFn: uploadMessageToUpstash,
-		onMutate: async (newMessage: Message) => {
-			await queryClient.cancelQueries({ queryKey: ['messages'] });
-
-			const previousTodos = queryClient.getQueryData(['messages']);
-
-			queryClient.setQueryData(['messages'], (oldMessages: any) => [
-				...oldMessages,
-				newMessage,
-			]);
-
-			return { previousTodos };
-		},
-		onError: (error, newMessage, context) => {
-			console.error(error);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ['messages'] });
-		},
-	});
-
-	const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+	const formSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		if (!input) return;
@@ -73,8 +30,24 @@ const ChatInput: React.FC = () => {
 			email: 'hhh.com',
 		};
 
-		addMessageMutation.mutate(message);
-		queryClient.invalidateQueries({ queryKey: ['messages'] });
+		const uploadMessageToUpstash = async () => {
+			const data = await fetch('/api/addMessage', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					message,
+				}),
+			}).then((res) => res.json());
+
+			return [data.message, ...messages!];
+		};
+
+		await mutate(uploadMessageToUpstash, {
+			optimisticData: [message, ...messages!],
+			rollbackOnError: true,
+		});
 	};
 
 	return (

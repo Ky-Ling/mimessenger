@@ -1,6 +1,7 @@
 import redis from '@/redis';
 import { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 import { Message } from '@/typings';
+import { serverPusher } from '@/pusher';
 
 type Data = {
 	message: Message;
@@ -28,6 +29,8 @@ const handler: NextApiHandler = async (
 	};
 
 	await redis.hset('messages', message.id, JSON.stringify(newMessage));
+
+	serverPusher.trigger('messages', 'new-message', newMessage);
 
 	res.status(200).json({ message: newMessage });
 };

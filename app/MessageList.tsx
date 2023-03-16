@@ -1,17 +1,40 @@
-'use client'
+'use client';
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
 import fetcher from '@/utils/fetchMessages';
 import { Message } from '@/typings';
 import MessageItem from './MessageItem';
+import { clientPusher } from '@/pusher';
+import useSWR from 'swr';
 
 const MessageList: React.FC = () => {
 	const {
 		data: messages,
-		isLoading,
 		error,
-	} = useQuery<Message[]>(['messages'], fetcher);
+		mutate,
+	} = useSWR<Message[]>('/api/getMessages', fetcher);
+
+	useEffect(() => {
+		const channel = clientPusher.subscribe('messages');
+
+		channel.bind('new-message', async (data: Message) => {
+			if (messages?.find((message) => message.id === data.id)) return;
+
+			if (!messages) {
+				mutate(fetcher);
+			} else {
+				mutate(fetcher, {
+					optimisticData: [data, ...messages!],
+					rollbackOnError: true,
+				});
+			}
+		});
+
+		return () => {
+			channel.unbind_all();
+			channel.unsubscribe();
+		};
+	}, [messages, clientPusher, mutate]);
 
 	return (
 		<div className="space-y-5 px-5 pt-8 pb-32 max-w-2xl xl:max-w-4xl mx-auto">
