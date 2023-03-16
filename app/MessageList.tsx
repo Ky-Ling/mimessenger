@@ -7,7 +7,11 @@ import MessageItem from './MessageItem';
 import { clientPusher } from '@/pusher';
 import useSWR from 'swr';
 
-const MessageList: React.FC = () => {
+interface MessageListProps {
+	initialMessages: Message[];
+}
+
+const MessageList: React.FC<MessageListProps> = ({ initialMessages }) => {
 	const {
 		data: messages,
 		error,
