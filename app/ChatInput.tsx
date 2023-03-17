@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, RefObject } from 'react';
 import { v4 as uuid } from 'uuid';
 import useSWR from 'swr';
 import { Message } from '../typings';
 import fetcher from '@/utils/fetchMessages';
 
-const ChatInput: React.FC = () => {
+interface ChatInputProps {
+	chatRef: RefObject<HTMLDivElement>;
+}
+
+const ChatInput: React.FC<ChatInputProps> = ({ chatRef }) => {
 	const [input, setInput] = useState('');
 	const { data: messages, error, mutate } = useSWR('/api/getMessages', fetcher);
 
@@ -47,6 +51,10 @@ const ChatInput: React.FC = () => {
 		await mutate(uploadMessageToUpstash, {
 			optimisticData: [message, ...messages!],
 			rollbackOnError: true,
+		});
+
+		chatRef?.current?.scrollIntoView({
+			behavior: 'smooth',
 		});
 	};
 
