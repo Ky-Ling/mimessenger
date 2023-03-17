@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, RefObject } from 'react';
+import React, { useEffect, useRef } from 'react';
 import fetcher from '@/utils/fetchMessages';
 import { Message } from '@/typings';
 import MessageItem from './MessageItem';
@@ -8,16 +8,17 @@ import { clientPusher } from '@/pusher';
 import useSWR from 'swr';
 
 interface MessageListProps {
-	chatRef: RefObject<HTMLDivElement>;
+	// chatRef: RefObject<HTMLDivElement>;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ chatRef }) => {
+const MessageList: React.FC = () => {
 	const {
 		data: messages,
 		error,
 		mutate,
 		isLoading,
 	} = useSWR<Message[]>('/api/getMessages', fetcher);
+	const chatRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const channel = clientPusher.subscribe('messages');

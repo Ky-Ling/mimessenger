@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useState, RefObject } from 'react';
+import React, { useState, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import useSWR from 'swr';
 import { Message } from '../typings';
 import fetcher from '@/utils/fetchMessages';
+import { getServerSession } from 'next-auth/next';
 
 interface ChatInputProps {
-	chatRef: RefObject<HTMLDivElement>;
+	session: Awaited<ReturnType<typeof getServerSession>>;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ chatRef }) => {
+const ChatInput: React.FC<ChatInputProps> = ({ session }) => {
 	const [input, setInput] = useState('');
+	const chatRef = useRef<HTMLDivElement>(null);
+
 	const { data: messages, error, mutate } = useSWR('/api/getMessages', fetcher);
 
 	const formSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -69,6 +72,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ chatRef }) => {
 				}
 				type="text"
 				value={input}
+				disabled={!session}
 				placeholder="Enter message here..."
 				className="flex-1 rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent px-5 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
 			/>
