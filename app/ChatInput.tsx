@@ -8,7 +8,9 @@ import fetcher from '@/utils/fetchMessages';
 import { getServerSession } from 'next-auth/next';
 
 interface ChatInputProps {
-	session: Awaited<ReturnType<typeof getServerSession>>;
+	// session: Awaited<ReturnType<typeof getServerSession>>;
+	// FIXME
+	session: any;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ session }) => {
@@ -20,7 +22,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ session }) => {
 	const formSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!input) return;
+		if (!input || !session) return;
 		const messageToSend = input;
 		setInput('');
 
@@ -28,13 +30,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ session }) => {
 			id: uuid(),
 			message: messageToSend,
 			created_at: Date.now(),
-			username: 'Torrid',
-			profilePic:
-				// 'https://scontent.fhkg10-1.fna.fbcdn.net/v/t39.30808-6/277528122_394444219164533_222561899117725696_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=174925&_nc_ohc=EM8l2f5ROCoAX855d8f&_nc_oc=AQnvgvl2Tk-niHDEXM5dSBnmo58I8WLSGcCWNatK6YyPisZ2VzsHyHjqksApYUeQyZU&_nc_ht=scontent.fhkg10-1.fna&oh=00_AfA5JuU3bFjhd0S1lSVWVfLBrqu7i9ggmD49gSviWWbD-Q&oe=64149927',
-				// 'https://links.papareact.com',
-				// 'https://links.papareact.com/jne',
-				'https://links.papareact.com/jne',
-			email: 'hhh.com',
+			username: session?.user?.name,
+			profilePic: session?.user?.image,
+			email: session?.user?.email,
 		};
 
 		const uploadMessageToUpstash = async () => {

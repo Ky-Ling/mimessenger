@@ -1,11 +1,12 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getServerSession } from 'next-auth';
 
 import LogoutButton from './LogoutButton';
 
-const Header: React.FC = () => {
-	const session = false;
+const Header = async () => {
+	const session = await getServerSession();
 
 	if (session) {
 		return (
@@ -15,12 +16,12 @@ const Header: React.FC = () => {
 						className="rounded-full mx-2 object-contain"
 						height={10}
 						width={50}
-						src="https://links.papareact.com/jne"
+						src={session?.user?.image!}
 						alt="Profile Picture"
 					/>
 					<div>
 						<p className="text-blue-400">Log in as: </p>
-						<p className="font-bold text-lg">Torrid</p>
+						<p className="font-bold text-lg">{session?.user?.name}</p>
 					</div>
 				</div>
 				<LogoutButton />
