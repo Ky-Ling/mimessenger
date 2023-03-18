@@ -1,17 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
-
+import useSWR from 'swr';
 import { Message } from '../typings';
+import fetcher from '@/utils/fetchMessages';
+import { getServerSession } from 'next-auth/next';
 
-const ChatInput: React.FC = () => {
+interface ChatInputProps {
+	// session: Awaited<ReturnType<typeof getServerSession>>;
+	// FIXME
+	session: any;
+}
+
+const ChatInput: React.FC<ChatInputProps> = ({ session }) => {
 	const [input, setInput] = useState('');
+	const chatRef = useRef<HTMLDivElement>(null);
 
-	const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+	const { data: messages, error, mutate } = useSWR('/api/getMessages', fetcher);
+
+	const formSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!input) return;
+		if (!input || !session) return;
 		const messageToSend = input;
 		setInput('');
 
@@ -19,33 +30,39 @@ const ChatInput: React.FC = () => {
 			id: uuid(),
 			message: messageToSend,
 			created_at: Date.now(),
-			username: 'Torrid',
-			profilePic:
-				'https://scontent-nrt1-1.xx.fbcdn.net/v/t39.30808-6/320129965_1160752784833145_7000813986385643717_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=L2EUmu9Aiv8AX8nCo6S&tn=vKX-NcxAD7B80kyV&_nc_ht=scontent-nrt1-1.xx&oh=00_AfA7c7pxkgNo4b-MsEnRo2hiVWyDZQIibeL7x_tsMdJ_YQ&oe=63FFCAA9',
-			email: 'hhh.com',
+			username: session?.user?.name,
+			profilePic: session?.user?.image,
+			email: session?.user?.email,
 		};
 
 		const uploadMessageToUpstash = async () => {
-			const res = await fetch('/api/addMessage', {
+			const data = await fetch('/api/addMessage', {
 				method: 'POST',
 				headers: {
-					'Content-type': 'application/json',
+					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
 					message,
 				}),
-			});
+			}).then((res) => res.json());
 
-			const data = await res.json();
+			return [data.message, ...messages!];
 		};
 
-		uploadMessageToUpstash();
+		await mutate(uploadMessageToUpstash, {
+			optimisticData: [message, ...messages!],
+			rollbackOnError: true,
+		});
+
+		chatRef?.current?.scrollIntoView({
+			behavior: 'smooth',
+		});
 	};
 
 	return (
 		<form
 			onSubmit={formSubmitHandler}
-			className="fixed bottom-0 z-50 w-full flex px-10 py-5 space-x-2 border-t border-gray-100"
+			className="fixed bottom-0 z-50 w-full flex px-10 py-5 space-x-2 border-t bg-white  border-gray-100"
 		>
 			<input
 				onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -53,6 +70,7 @@ const ChatInput: React.FC = () => {
 				}
 				type="text"
 				value={input}
+				disabled={!session}
 				placeholder="Enter message here..."
 				className="flex-1 rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent px-5 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
 			/>
