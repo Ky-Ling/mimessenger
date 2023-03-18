@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { getProviders } from 'next-auth/react';
 import { signIn } from 'next-auth/react';
@@ -14,9 +16,7 @@ const SignIn: React.FC<SignInProps> = ({ providers }) => {
 					<button
 						className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
 						onClick={() =>
-							signIn(provider.id, {
-								callbackUrl: process.env.VERCEL_URL || 'http://localhost:3000',
-							})
+							signIn(provider.id, { callbackUrl: 'http://localhost:3000/home' })
 						}
 					>
 						Sign in with {provider.name}
